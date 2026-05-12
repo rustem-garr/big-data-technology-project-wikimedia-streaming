@@ -1,6 +1,17 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, from_json, to_timestamp
-from pyspark.sql.types import StructType, StructField, StringType, BooleanType, LongType
+from pyspark.sql.functions import (
+    col,
+    from_json,
+    window,
+    from_unixtime
+)
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    StringType,
+    BooleanType,
+    LongType
+)
 
 KAFKA_TOPIC = "wikimedia-events"
 KAFKA_BOOTSTRAP = "kafka-server:9092"
@@ -49,13 +60,36 @@ clean_df = parsed_df.select(
     col("wiki"),
     col("server_name"),
     col("timestamp"),
-    to_timestamp(col("timestamp")).alias("event_time")
+    from_unixtime(col("timestamp")).cast("timestamp").alias("event_time")
+).filter(
+    col("event_time").isNotNull() &
+    col("wiki").isNotNull() &
+    col("type").isNotNull() &
+    col("bot").isNotNull()
 )
 
-query = clean_df.writeStream \
+agg_df = clean_df.groupBy(
+    window(col("event_time"), "1 minute"),
+    col("wiki"),
+    col("type"),
+    col("bot")
+).count().select(
+    col("window.start").alias("window_start"),
+    col("window.end").alias("window_end"),
+    col("wiki"),
+    col("type"),
+    col("bot"),
+    col("count")
+).orderBy(
+    col("window_start"),
+    col("count").desc()
+)
+
+query = agg_df.writeStream \
     .format("console") \
-    .outputMode("append") \
+    .outputMode("complete") \
     .option("truncate", "false") \
+    .option("numRows", 50) \
     .start()
 
 query.awaitTermination()

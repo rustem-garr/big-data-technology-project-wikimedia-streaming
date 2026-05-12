@@ -15,6 +15,8 @@ from pyspark.sql.types import (
 
 KAFKA_TOPIC = "wikimedia-events"
 KAFKA_BOOTSTRAP = "kafka-server:9092"
+OUTPUT_PATH = "hdfs://localhost:9000/final_project/wikimedia/event_counts"
+CHECKPOINT_PATH = "hdfs://localhost:9000/final_project/wikimedia/checkpoints/event_counts"
 
 schema = StructType([
     StructField("id", LongType(), True),
@@ -34,6 +36,7 @@ schema = StructType([
 
 spark = SparkSession.builder \
     .appName("WikimediaStructuredStreaming") \
+    .enableHiveSupport() \
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("WARN")
@@ -68,7 +71,7 @@ clean_df = parsed_df.select(
     col("bot").isNotNull()
 )
 
-agg_df = clean_df.groupBy(
+agg_df = clean_df.withWatermark("event_time", "2 minutes").groupBy(
     window(col("event_time"), "1 minute"),
     col("wiki"),
     col("type"),
@@ -80,16 +83,13 @@ agg_df = clean_df.groupBy(
     col("type"),
     col("bot"),
     col("count")
-).orderBy(
-    col("window_start"),
-    col("count").desc()
 )
 
 query = agg_df.writeStream \
-    .format("console") \
-    .outputMode("complete") \
-    .option("truncate", "false") \
-    .option("numRows", 50) \
+    .format("parquet") \
+    .outputMode("append") \
+    .option("path", OUTPUT_PATH) \
+    .option("checkpointLocation", CHECKPOINT_PATH) \
     .start()
 
 query.awaitTermination()

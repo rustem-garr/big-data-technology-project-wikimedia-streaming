@@ -8,7 +8,7 @@ st.caption("Implemented by Rustem & Thiha")
 CONTAINER_NAME = "cs523bdt-lab"
 
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=300)
 def run_hive_query(query: str) -> str:
     cmd = [
         "docker",
@@ -30,7 +30,7 @@ def run_hive_query(query: str) -> str:
     return stdout
 
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=300)
 def query_to_df(query: str, columns: list[str]) -> pd.DataFrame:
     output = run_hive_query(query)
     if not output:

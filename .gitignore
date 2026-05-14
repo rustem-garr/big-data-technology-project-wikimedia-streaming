@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 streaming/checkpoints/
 streaming/spark-warehouse/
+producer/derby.log
+producer/metastore_db/

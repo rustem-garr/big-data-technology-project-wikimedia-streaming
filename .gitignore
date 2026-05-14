@@ -7,3 +7,5 @@ streaming/checkpoints/
 streaming/spark-warehouse/
 producer/derby.log
 producer/metastore_db/
+streaming/derby.log
+streaming/metastore_db/

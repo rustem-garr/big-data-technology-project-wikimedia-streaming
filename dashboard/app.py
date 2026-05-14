@@ -3,6 +3,7 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Wikimedia Streaming Dashboard", layout="wide")
+st.caption("Implemented by Rustem & Thiha")
 
 CONTAINER_NAME = "cs523bdt-lab"
 

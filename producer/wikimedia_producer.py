@@ -48,6 +48,7 @@ def main():
                         continue
 
                     if raw_line.startswith("data:"):
+                        data_str = raw_line[len("data:"):].strip()
 
                         if not data_str:
                             continue

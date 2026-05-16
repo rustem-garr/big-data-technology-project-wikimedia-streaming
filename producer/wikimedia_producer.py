@@ -27,7 +27,7 @@ def main():
             print("Connecting to Wikimedia event stream...", flush=True)
 
             headers = {
-                "User-Agent": "Rustem-MIU-BDT-FinalProject/1.0 (student project; contact: rustem@example.com)",
+                "User-Agent": "Rustem-Thiha-MIU-BDT-FinalProject/1.0 (student project; contact: rustem@example.com)",
                 "Accept": "text/event-stream",
                 "Cache-Control": "no-cache"
             }
@@ -48,7 +48,6 @@ def main():
                         continue
 
                     if raw_line.startswith("data:"):
-                        data_str = raw_line[len("data:"):].strip()
 
                         if not data_str:
                             continue
